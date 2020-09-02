@@ -1,21 +1,13 @@
+import sys
 import time
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
 
-SCHOOL_ID = 480053
-CREDENTIALS_FILE = r'c:\temp\corona.txt'
-
 driver = webdriver.Chrome(ChromeDriverManager().install())
 
 
-def get_credentials():
-    with open(CREDENTIALS_FILE, 'r') as file:
-        content = file.readlines()
-    return content[0], content[1]
-
-
-def login(username, pass_word):
+def login(school_id, username, pass_word):
     driver.get("http://web.mashov.info/students/login")
     form = driver.find_element_by_class_name('mat-tab-body-wrapper')
     school = form.find_element_by_id('mat-input-3')
@@ -24,7 +16,7 @@ def login(username, pass_word):
     password = form.find_element_by_id('mat-input-4')
     enter_button = form.find_element_by_tag_name('button')
     school.clear()
-    school.send_keys(SCHOOL_ID)
+    school.send_keys(school_id)
     school.send_keys(Keys.RETURN)
     if 'שנה נוכחית' not in year.text:
         year.send_keys(Keys.ARROW_UP)
@@ -56,8 +48,13 @@ def fill_form():
 
 
 def main():
-    user, password = get_credentials()
-    login(user, password)
+    try:
+        school_id, user, password = sys.argv[1], sys.argv[2], sys.argv[3]
+    except IndexError:
+        print('Missing input args - school_id, user, password')
+        driver.quit()
+        exit()
+    login(school_id, user, password)
     fill_form()
     driver.quit()
 
